@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../styles/reset.css">
+    <style>
+        .background{ display: flex;}
+        .background>div{ height: 100vh;
+            border-right:1px solid black; 
+            width: 100px; 
+            transition: 0.3s;
+        }
+        
+        .background>div.active
+        {
+            margin-top: -98vh;
+          
+        }
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+    <script src="../script/jquery-3.6.1.js"></script>
+    <script src="../script/jquery-ui.js"></script>
+    <script>
+        const boxs = document.querySelectorAll('.background>div');
+        boxs.forEach(box => {
+            const r = parseInt(Math.random()*255);
+            const g = parseInt(Math.random()*255);
+            const b = parseInt(Math.random()*255);
+
+            const red = r.toString(16);
+            const green = g.toString(16);
+            const blue = b.toString(16);
+
+            box.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+            //box.style.backgroundColor = `#${red}${green}${blue}`;
+        });
+
+        // css 만으로 가능 
+        // let toggle = false; 
+        let counter = 0; 
+        const timer = setInterval(()=>{
+            toggle = true; 
+            if( counter >= 30){
+                toggle = false; 
+                clearInterval( timer );
+            } 
+            if( toggle ) boxs[counter].style.marginTop = '-98vh';
+            
+            counter++;
+        }, 50)
+
+        boxs.forEach(box=>{
+            box.addEventListener('mouseover', ()=>{
+                box.style.marginTop = '-95vh';
+                // active보다 우선순위 낮아서 클래스 제어못함
+            })
+            box.addEventListener('mouseout', ()=>{
+                box.style.marginTop = '-98vh'; 
+            })
+        }) 
+    </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .brand-container,
+        .product-Types-container{ 
+            border:1px solid black; 
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="input-container">
+        <div class="brand-container">
+            <div class="brand">
+                <input type="checkbox" id="maybelline">
+                <label for="maybelline">maybelline</label>
+            </div>
+            <div class="brand">
+                <input type="checkbox" id="almay">
+                <label for="almay">almay</label>
+            </div>
+            <div class="brand">
+                <input type="checkbox" id="physicians formula">
+                <label for="physicians formula">physicians formula</label>
+            </div>
+        </div>
+        <div class="product-Types-container">
+            <div class="product_type">
+                <input type="checkbox" id="blush">
+                <label for="blush">Blush</label>
+            </div>
+            <div class="product_type">
+                <input type="checkbox" id="eyebrow">
+                <label for="eyebrow">Eyebrow</label>
+            </div>
+            <div class="product_type">
+                <input type="checkbox" id="foundation">
+                <label for="foundation">Foundation</label>
+            </div>
+        </div>
+        
+        <div class="btn-container">
+            <button id="searchBtn">검색</button>
+            <button id="initBtn">초기화</button> 
+        </div>
+    </div>
+    <div class="product-list-container">
+    </div>
+    <script>
+        // 2개의 브랜드를 동시에 검색하면 뒤에 것만 검사됨  
+        // 같은 카테고리를 두개이상 선택할 필요 없음
+        //http://makeup-api.herokuapp.com/api/v1/products.json?
+        //http://makeup-api.herokuapp.com/api/v1/products.json?brand=covergirl&product_type=lipstick
+        //https://www.oliveyoung.co.kr/store/search/getSearchMain.do?query=%EB%B9%84%ED%83%80%EB%AF%BC&giftYn=N
+
+        const checkboxs = document.querySelectorAll('input[type="checkbox"]');
+        let arys = []; // all, search
+        async function loadData(url){
+            const response = await fetch (url);
+            const res = await response.json(); 
+            arys = res; 
+            // 배열 주소를 그대로 복사하여 사용하므로 const 는 바꿀 수 없는 주소
+            console.log(arys.length);
+            allDataHandle();
+        }
+        loadData('http://makeup-api.herokuapp.com/api/v1/products.json');
+
+        async function allDataHandle(){ // 배열 
+            let str='';
+            arys.forEach( ary => {
+                str += creatDom(ary);
+            })
+            document.querySelector('.product-list-container').innerHTML = str;
+        }
+       
+        // { key : value, key : value }
+        let urlAry = [];
+        checkboxs.forEach( checkbox => {
+            checkbox.addEventListener('click', async (event)=>{
+                const keyValue = checkbox.getAttribute('id');
+                const keyName = checkbox.parentElement.getAttribute('class');
+                // console.log( keyValue, keyName );
+                const str = { keyName , keyValue };
+
+                if( checkbox.checked ){
+                    // {
+                    //     keyName : brand,
+                    //     keyValue : maybline
+                    // } 
+                    const url = `${keyName}=${keyValue}`;
+                    console.log( url );
+                    urlAry.push( url );
+                } else { 
+                    const filterAry = urlAry.filter( ary => ary.indexOf(keyValue) < 0);
+                    urlAry = [...filterAry]; 
+                }
+                console.log('urlAry : ', urlAry )
+            })
+        })
+
+        searchBtn.addEventListener('click', ()=>{ 
+             let urlstr = '';
+             urlAry.forEach( ary => {
+                urlstr += ary + '&';
+             })
+             console.log('urlstr', urlstr);
+             // fetch
+             let url = 'http://makeup-api.herokuapp.com/api/v1/products.json?'+urlstr;
+             loadData( url );
+        })
+
+        initBtn.addEventListener('click', ()=>{
+            // const ary = checkboxs.map( checkbox => checkbox.checked = false );
+            checkboxs.forEach( checkbox =>{
+                checkbox.checked = false;
+            })
+             
+            loadData('http://makeup-api.herokuapp.com/api/v1/products.json');
+            // 먼곳에 931가지고 오면 시간이 걸리므로 
+            // 가져온 것을 조작해서 뿌리기도 필요
+        })
+
+        function creatDom(item) {
+            const itemDom = `
+            <div class="product-list-box">
+                <div class="product-img">
+                    <img src="${ item.image_link }"  >
+                </div>
+                <h2 class="brand-name">${item.brand}</h2>  
+                <h3 class="product-name">${item.name}</h3> 
+                <h4 class="product-type">${item.product_type}</h4> 
+                <div class="product-price">
+                    <span class="price-sign">
+                        ${item.price_sign ? item.price_sign : "$"}</span>
+                    <span class="price">${item.price}</span>
+                </div> 
+            </div>
+            `
+            return itemDom;
+        }
+    </script>
+</body>
+</html>

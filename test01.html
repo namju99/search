@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .brand-container,
+        .product-Types-container{ 
+            border:1px solid black; 
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="input-container">
+        <div class="brand-container">
+            <div class="brand">
+                <input type="checkbox" id="maybelline">
+                <label for="maybelline">maybelline</label>
+            </div>
+            <div class="brand">
+                <input type="checkbox" id="almay">
+                <label for="almay">almay</label>
+            </div>
+            <div class="brand">
+                <input type="checkbox" id="physicians formula">
+                <label for="physicians formula">physicians formula</label>
+            </div>
+        </div>
+        <div class="product-Types-container">
+            <div class="product_type">
+                <input type="checkbox" id="blush">
+                <label for="blush">Blush</label>
+            </div>
+            <div class="product_type">
+                <input type="checkbox" id="eyebrow">
+                <label for="eyebrow">Eyebrow</label>
+            </div>
+            <div class="product_type">
+                <input type="checkbox" id="foundation">
+                <label for="foundation">Foundation</label>
+            </div>
+        </div>
+        
+        <div class="btn-container">
+            <button id="searchBtn">검색</button>
+            <button id="initBtn">초기화</button> 
+        </div>
+    </div>
+    <div class="product-list-container">
+    </div>
+    <script>
+        //http://makeup-api.herokuapp.com/api/v1/products.json?
+        // javascript : 데이터 처리할때 데이터가 처리되었는 기다렸다 실행 하지 않음
+        // 프로미스처리 : 
+        // 
+        let arys = [];
+        async function loadData(){
+            const url = 'http://makeup-api.herokuapp.com/api/v1/products.json';
+            const response = await fetch ('./data.json');
+            const res = await response.json(); 
+            arys = res; 
+            // 배열 주소를 그대로 복사하여 사용하므로 const 는 바꿀 수 없는 주소
+            console.log(arys.length);
+            allDataHandle();
+        }
+        loadData();
+
+        async function allDataHandle(){ // 배열 
+            let str='';
+            arys.forEach( ary => {
+                str += creatDom(ary);
+            })
+            document.querySelector('.product-list-container').innerHTML = str;
+        }
+       
+        // 3개이상 배열을 합치기 
+        // 배열에서 지우기 // 다시 검색
+        // data : endpoint
+        let searchAry = [];
+        const checkboxs = document.querySelectorAll('input[type="checkbox"]');
+        checkboxs.forEach( checkbox => {
+            checkbox.addEventListener('click', async (event)=>{
+                // checkbox.checked = !event.target.checked; 
+                // console.log( checkbox.checked );
+
+                 //[ { brand : mai, data : 배열},
+                   //     keyName    KeyValue
+                    // { brand : mai, data : 배열},
+                    // { brand : mai, data : 배열}]
+                
+                const keyValue = event.target.getAttribute('id').toLowerCase();
+                const keyName = event.target.parentElement.getAttribute('class').toLowerCase();
+                 
+                console.log( keyName, keyValue );
+                if( checkbox.checked ){
+                    const filterArys = await arys.filter(ary=> 
+                        ary[`${keyName}`] === keyValue.toLowerCase()
+                     );
+                    console.log('true filterAry : ', filterArys );
+                    searchAry.push({ keyName:keyValue, data: filterArys })     
+                }else{
+                    const filterArys = await searchAry.filter( ary => ary.keyName  !== keyValue.toLowerCase());
+                    console.log('false filterAry : ', filterArys.length);
+                    searchAry = [...filterArys];
+                }  
+                
+                console.log( searchAry.length, searchAry );      
+            })
+        })
+
+        searchBtn.addEventListener('click', ()=>{ 
+            let str = "";
+            searchAry.forEach( ary => { 
+                //  { brand : mai, data : 배열}
+                ary.data.forEach( pr =>{
+                    str +=  creatDom(pr);
+                })
+            })                
+            document.querySelector('.product-list-container').innerHTML = str;
+        })
+
+        initBtn.addEventListener('click', ()=>{
+            // const ary = checkboxs.map( checkbox => checkbox.checked = false );
+            checkboxs.forEach( checkbox =>{
+                checkbox.checked = false;
+            })
+            searchAry = [];
+            console.log( 'initBtn : ', searchAry.length );
+            
+            allDataHandle();
+        })
+
+        function creatDom(item) {
+            const itemDom = `
+            <div class="product-list-box">
+                <div class="product-img">
+                    <img src="${ item.image_link }"  >
+                </div>
+                <h2 class="brand-name">${item.brand}</h2>  
+                <h3 class="product-name">${item.name}</h3> 
+                <h4 class="product-type">${item.product_type}</h4> 
+                <div class="product-price">
+                    <span class="price-sign">
+                        ${item.price_sign ? item.price_sign : "$"}</span>
+                    <span class="price">${item.price}</span>
+                </div> 
+            </div>
+            `
+            return itemDom;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .brand-container,
+        .product-Types-container{ 
+            border:1px solid black; 
+            margin-bottom: 30px;
+
+          
+        }
+    
+
+        .product-image img{ width: 300px; height: 300px;}
+
+
+
+    </style>
+</head>
+<body>
+    <div class="input-container">
+        <div class="brand-container">
+            <div class="brand">
+                <input type="checkbox" id="maybelline">
+                <label for="maybelline">maybelline</label>
+            </div>
+            <div class="brand">
+                <input type="checkbox" id="almay">
+                <label for="almay">almay</label>
+            </div>
+            <div class="brand">
+                <input type="checkbox" id="physicians formula">
+                <label for="physicians formula">physicians formula</label>
+            </div>
+        </div>
+        <div class="product-Types-container">
+            <div class="product_type">
+                <input type="checkbox" id="blush">
+                <label for="blush">Blush</label>
+            </div>
+            <div class="product_type">
+                <input type="checkbox" id="eyebrow">
+                <label for="eyebrow">Eyebrow</label>
+            </div>
+            <div class="product_type">
+                <input type="checkbox" id="foundation">
+                <label for="foundation">Foundation</label>
+            </div>
+        </div>
+        
+        <div class="btn-container">
+            <button id="searchBtn">검색</button>
+            <button id="initBtn">초기화</button> 
+        </div>
+    </div>
+
+    <div class="product-list-container">
+    
+
+    </div>
+    <script>
+        //http://makeup-api.herokuapp.com/api/v1/products.json
+        const checkboxs = document.querySelectorAll('input[type="checkbox"]');
+        let arys = [];
+        async function loadData(url){
+            const response = await fetch (url);
+            const res = await response.json();
+            arys = res;
+
+            console.log(arys.length);
+
+            allDataHandle();
+
+            
+
+
+        }
+
+        loadData(`http://makeup-api.herokuapp.com/api/v1/products.json`);
+
+        async function allDataHandle(){
+
+            let str ='';
+            arys.forEach( ary => {
+                str += creatDom(ary);
+
+            })
+
+            document.querySelector('.product-list-container').innerHTML = str;
+
+            
+        }
+
+        
+
+        
+
+        //http://makeup-api.herokuapp.com/api/v1/products.json?brand=covergirl&product_type=lipstick
+
+
+       
+
+        let urlAry =[];
+
+
+        checkboxs.forEach( checkbox =>{
+            checkbox.addEventListener('click', async (event)=>{
+                const keyValue = checkbox.getAttribute('id');
+                const keyName = checkbox.parentElement.getAttribute('class');
+
+                if(checkbox.checked){
+                    const url = `${keyName}=${keyValue}`;
+                    console.log( url);
+
+                    urlAry.push(url);
+                }
+                else{
+                    const filterAry = urlAry.filter( ary => ary.indexOf(keyValue) < 0);
+                    urlAry = [...filterAry];
+
+                }
+
+                console.log(urlAry);
+
+            })
+        })
+
+
+
+        //const searchBtn = docuemnt.querySelector('#searchBtn');
+        
+        searchBtn.addEventListener('click', ()=>{ 
+             let urlstr = '';
+             urlAry.forEach( ary => {
+                urlstr += ary + '&';
+             })
+             console.log('urlstr', urlstr);
+             // fetch
+             let url = 'http://makeup-api.herokuapp.com/api/v1/products.json?'+urlstr;
+             loadData( url );
+        })
+
+        initBtn.addEventListener('click',()=>{
+            checkboxs.forEach( checkbox =>{
+                checkbox.checked = false;
+            })
+
+            loadData('http://makeup-api.herokuapp.com/api/v1/products.json');
+        })
+
+
+
+
+
+
+        function creatDom(item){
+            const itemDom = `
+            <div class="product-list-box">
+            <div class="product-image">
+                <img src="${item.image_link}" alt="">
+            </div>
+            
+            <h2 class="brand-name">${item.brand}</h2>  
+            <h3 class="product-name">${item.name}</h3> 
+            <h4 class="product-type">${item.product_type}</h4> 
+            <div class="product-price">
+                <span class="price-sign">
+                    ${item.price_sign? item.price_sign : "$"  }
+
+                </span>
+                <span class="price">${item.price}</span>
+                
+        </div>`
+
+        return itemDom;
+
+        }
+       
+
+        
+    </script>
+    
+</body>
+</html>
